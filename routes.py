@@ -347,6 +347,52 @@ def view_staff(id):
         format_phone=format_phone_number
     )
 
+@app.route('/staff/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_staff(id):
+    staff = Staff.query.get_or_404(id)
+    form = StaffForm(obj=staff)
+    
+    # Pre-populate with user data
+    if request.method == 'GET':
+        form.username.data = staff.user.username
+        form.email.data = staff.user.email
+        form.first_name.data = staff.user.first_name
+        form.last_name.data = staff.user.last_name
+        form.role.data = staff.user.role_id
+    
+    # Set role choices
+    form.role.choices = [(role.id, role.name) for role in Role.query.order_by(Role.name).all()]
+    
+    if form.validate_on_submit():
+        # Update user information
+        staff.user.username = form.username.data
+        staff.user.email = form.email.data
+        staff.user.first_name = form.first_name.data
+        staff.user.last_name = form.last_name.data
+        staff.user.role_id = form.role.data
+        
+        # Update password if provided
+        if form.password.data:
+            staff.user.set_password(form.password.data)
+        
+        # Update staff profile
+        staff.specialization = form.specialization.data
+        staff.position = form.position.data
+        staff.department = form.department.data
+        staff.phone = form.phone.data
+        staff.medical_license = form.medical_license.data
+        staff.years_experience = form.years_experience.data
+        staff.board_certified = form.board_certified.data
+        staff.availability = form.availability.data
+        
+        db.session.commit()
+        
+        flash('Staff information updated successfully!', 'success')
+        return redirect(url_for('view_staff', id=staff.id))
+    
+    return render_template('staff/edit.html', title='Edit Staff', form=form, staff=staff)
+
 # Appointment routes
 @app.route('/appointments')
 @login_required

@@ -1,6 +1,6 @@
-/* Custom styling for Hospital Management System */
+/* Custom styling for Hospital Management System - Modern 2025 Edition */
 
-/* Use Bootstrap color variables for consistency */
+/* Use Bootstrap color variables for consistency with enhanced palette */
 :root {
     --hospital-primary: var(--bs-info);
     --hospital-secondary: var(--bs-primary);
@@ -8,6 +8,71 @@
     --hospital-success: var(--bs-teal);
     --hospital-warning: var(--bs-orange);
     --hospital-danger: var(--bs-red);
+    
+    /* Extended palette for more vibrant design */
+    --hospital-violet: #7952b3;
+    --hospital-indigo: #6610f2;
+    --hospital-light-blue: #20c997;
+    --hospital-mint: #0dcaf0;
+    --hospital-coral: #fd7e14;
+    --hospital-gradient-start: #0dcaf0;
+    --hospital-gradient-end: #7952b3;
+}
+
+/* Global styling enhancements */
+body {
+    scroll-behavior: smooth;
+}
+
+.card {
+    border-radius: 0.6rem;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-bottom: none;
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    padding: 1rem 1.25rem;
+}
+
+.btn {
+    border-radius: 0.4rem;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--hospital-gradient-start), var(--hospital-gradient-end));
+    border: none;
+}
+
+.btn-outline-info:hover {
+    background-color: var(--hospital-primary);
+}
+
+/* Enhanced section styling */
+.section-title {
+    position: relative;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.section-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    height: 4px;
+    width: 50px;
+    background: linear-gradient(to right, var(--hospital-gradient-start), var(--hospital-gradient-end));
+    border-radius: 2px;
 }
 
 /* Dashboard cards */
@@ -193,6 +258,8 @@
     border-left: 3px solid var(--hospital-primary);
     padding: 15px;
     margin-bottom: 20px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 .ai-confidence-high {
@@ -205,4 +272,99 @@
 
 .ai-confidence-low {
     color: var(--hospital-danger);
+}
+
+/* Enhanced table styling */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid rgba(var(--bs-info-rgb), 0.2);
+    color: var(--hospital-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(var(--bs-info-rgb), 0.05);
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+/* Enhanced form controls */
+.form-control, .form-select {
+    border-radius: 0.4rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(var(--bs-info-rgb), 0.2);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--hospital-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-info-rgb), 0.25);
+}
+
+/* Quick action buttons */
+.quick-action-btn {
+    width: 100%;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    background: rgba(var(--bs-info-rgb), 0.1);
+    margin-bottom: 1rem;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background: linear-gradient(45deg, var(--hospital-gradient-start), var(--hospital-gradient-end));
+    color: white;
+}
+
+.quick-action-btn i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Gradient text for headings */
+.gradient-text {
+    background: linear-gradient(45deg, var(--hospital-gradient-start), var(--hospital-gradient-end));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+/* Staff profile image */
+.staff-profile-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.staff-profile-img i {
+    font-size: 3rem;
+    color: var(--hospital-primary);
 }

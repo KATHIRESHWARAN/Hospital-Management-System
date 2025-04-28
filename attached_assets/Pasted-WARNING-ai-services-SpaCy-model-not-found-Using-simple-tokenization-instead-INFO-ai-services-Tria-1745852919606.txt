@@ -1,0 +1,69 @@
+WARNING:ai_services:SpaCy model not found. Using simple tokenization instead.
+INFO:ai_services:Triage AI model successfully initialized
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: table staff has no column named medical_license
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\Downloads\DataHarvester-1\main.py", line 2, in <module>
+    import routes  # noqa: F401
+  File "C:\Users\Lenovo\Downloads\DataHarvester-1\routes.py", line 72, in <module>
+    initialize_roles()
+  File "C:\Users\Lenovo\Downloads\DataHarvester-1\routes.py", line 68, in initialize_roles
+    db.session.commit()
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\scoping.py", line 599, in commit
+    return self._proxied.commit()
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 4489, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Lenovo\AppData\Roaming\Python\Python39\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) table staff has no column named medical_license
+[SQL: INSERT INTO staff (user_id, specialization, position, department, phone, medical_license, years_experience, board_certified, availability) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (2, 'Cardiology', 'Senior Physician', 'Cardiology', '555-123-4567', 'MED-12345', '15', 1, 'Full-time')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+PS C:\Users\Lenovo\Downloads\DataHarvester-1> 

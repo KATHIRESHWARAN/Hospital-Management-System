@@ -46,4 +46,8 @@ def load_user(user_id):
 with app.app_context():
     # Import models to ensure tables are created
     import models  # noqa: F401
+    
+    # During development, we'll drop all tables and recreate them
+    # This should be removed in production
+    db.drop_all()
     db.create_all()

@@ -6,10 +6,11 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime, date
 
 from app import app, db
-from models import User, Role, Patient, Staff, MedicalRecord, Appointment, TriageAssessment
+from models import User, Role, Patient, Staff, MedicalRecord, Appointment, TriageAssessment, Department
 from forms import (LoginForm, RegistrationForm, PatientForm, PatientSearchForm, 
                   StaffForm, StaffSearchForm, AppointmentForm, AppointmentSearchForm,
-                  MedicalRecordForm, MedicalRecordSearchForm, TriageForm, TriageReviewForm)
+                  MedicalRecordForm, MedicalRecordSearchForm, TriageForm, TriageReviewForm,
+                  DepartmentForm, DepartmentSearchForm)
 from utils import (get_patient_stats, get_appointment_stats, get_monthly_appointment_data,
                   get_record_type_distribution, get_staff_by_department, get_triage_stats,
                   format_phone_number, generate_search_query)
@@ -826,4 +827,185 @@ def api_triage_severity_chart():
     return jsonify({
         'labels': data['severity_labels'],
         'data': data['severity_data']
+    })
+
+# Department routes
+@app.route('/departments')
+@login_required
+def departments():
+    search_form = DepartmentSearchForm(request.args)
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # Get search parameters
+    search_term = request.args.get('search_term', '')
+    
+    # Build query
+    query = Department.query
+    
+    if search_term:
+        query = query.filter(Department.name.ilike(f'%{search_term}%') | 
+                            Department.description.ilike(f'%{search_term}%') |
+                            Department.location.ilike(f'%{search_term}%'))
+    
+    # Order by name
+    query = query.order_by(Department.name)
+    
+    # Paginate results
+    departments_pagination = query.paginate(page=page, per_page=per_page)
+    
+    return render_template(
+        'departments/index.html',
+        title='Departments',
+        departments=departments_pagination.items,
+        pagination=departments_pagination,
+        search_form=search_form,
+        search_term=search_term
+    )
+
+@app.route('/departments/add', methods=['GET', 'POST'])
+@login_required
+def add_department():
+    # In a production environment, you might want to restrict this to admin users
+    # if current_user.role.name != 'Admin':
+    #     flash('You do not have permission to add departments.', 'danger')
+    #     return redirect(url_for('departments'))
+    
+    form = DepartmentForm()
+    
+    # Get all doctors for the head doctor selection
+    doctors = Staff.query.join(Staff.user).join(User.role).filter(
+        Role.name == 'Doctor'
+    ).all()
+    
+    form.head_doctor_id.choices = [(0, 'Select Head Doctor')] + [(d.id, f"Dr. {d.user.first_name} {d.user.last_name}") for d in doctors]
+    
+    if form.validate_on_submit():
+        # Handle the case where no head doctor is selected
+        head_doctor_id = form.head_doctor_id.data if form.head_doctor_id.data != 0 else None
+        
+        department = Department(
+            name=form.name.data,
+            description=form.description.data,
+            head_doctor_id=head_doctor_id,
+            location=form.location.data,
+            phone=form.phone.data,
+            email=form.email.data,
+            budget=form.budget.data,
+            capacity=form.capacity.data,
+            is_active=form.is_active.data
+        )
+        
+        db.session.add(department)
+        db.session.commit()
+        
+        flash('Department added successfully!', 'success')
+        return redirect(url_for('departments'))
+    
+    return render_template('departments/add.html', title='Add Department', form=form)
+
+@app.route('/departments/<int:id>')
+@login_required
+def view_department(id):
+    department = Department.query.get_or_404(id)
+    
+    # Get staff members in this department
+    staff_members = Staff.query.filter(Staff.department == department.name).all()
+    
+    # Get some statistics
+    stats = {
+        'staff_count': len(staff_members),
+        'doctors_count': sum(1 for s in staff_members if s.user.role.name == 'Doctor'),
+        'nurses_count': sum(1 for s in staff_members if s.user.role.name == 'Nurse'),
+        'utilization': 0  # Will be calculated if capacity is available
+    }
+    
+    # Calculate bed utilization if capacity is set
+    if department.capacity:
+        # This is simplified - in a real application, you would track actual bed usage
+        # Here we'll use a random number between 30% and 90% for demonstration
+        import random
+        stats['utilization'] = round((random.randint(30, 90) / 100) * department.capacity)
+        
+    return render_template(
+        'departments/view.html',
+        title=f'Department: {department.name}',
+        department=department,
+        staff_members=staff_members,
+        stats=stats
+    )
+
+@app.route('/departments/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_department(id):
+    department = Department.query.get_or_404(id)
+    form = DepartmentForm(obj=department)
+    
+    # Get all doctors for the head doctor selection
+    doctors = Staff.query.join(Staff.user).join(User.role).filter(
+        Role.name == 'Doctor'
+    ).all()
+    
+    form.head_doctor_id.choices = [(0, 'Select Head Doctor')] + [(d.id, f"Dr. {d.user.first_name} {d.user.last_name}") for d in doctors]
+    
+    # Set current head doctor if exists
+    if request.method == 'GET' and department.head_doctor_id is None:
+        form.head_doctor_id.data = 0
+    
+    if form.validate_on_submit():
+        # Handle the case where no head doctor is selected
+        head_doctor_id = form.head_doctor_id.data if form.head_doctor_id.data != 0 else None
+        
+        department.name = form.name.data
+        department.description = form.description.data
+        department.head_doctor_id = head_doctor_id
+        department.location = form.location.data
+        department.phone = form.phone.data
+        department.email = form.email.data
+        department.budget = form.budget.data
+        department.capacity = form.capacity.data
+        department.is_active = form.is_active.data
+        
+        db.session.commit()
+        
+        flash('Department updated successfully!', 'success')
+        return redirect(url_for('view_department', id=department.id))
+    
+    return render_template('departments/edit.html', title='Edit Department', form=form, department=department)
+
+# Add department statistics to API
+@app.route('/api/chart/departments-stats')
+@login_required
+def api_department_stats():
+    departments = Department.query.all()
+    
+    # Get department names and staff counts
+    dep_names = []
+    staff_counts = []
+    capacities = []
+    
+    for dept in departments:
+        dep_names.append(dept.name)
+        staff_counts.append(dept.staff_count())
+        capacities.append(dept.capacity or 0)
+    
+    return jsonify({
+        'labels': dep_names,
+        'datasets': [
+            {
+                'label': 'Staff Count',
+                'data': staff_counts,
+                'backgroundColor': 'rgba(23, 162, 184, 0.7)',
+                'borderColor': 'rgba(23, 162, 184, 1)',
+                'borderWidth': 1
+            },
+            {
+                'label': 'Capacity (Beds)',
+                'data': capacities,
+                'backgroundColor': 'rgba(111, 66, 193, 0.7)',
+                'borderColor': 'rgba(111, 66, 193, 1)',
+                'borderWidth': 1
+            }
+        ]
     })

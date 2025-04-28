@@ -15,7 +15,7 @@ from utils import (get_patient_stats, get_appointment_stats, get_monthly_appoint
                   format_phone_number, generate_search_query)
 from ai_services import assess_patient_symptoms
 
-# Initialize roles if they don't exist
+# Initialize roles and default users
 def initialize_roles():
     roles = ['Admin', 'Doctor', 'Nurse', 'Receptionist']
     for role_name in roles:
@@ -35,6 +35,33 @@ def initialize_roles():
         )
         admin_user.set_password('adminpassword')
         db.session.add(admin_user)
+        
+        # Also create a doctor user for convenience
+        doctor_role = Role.query.filter_by(name='Doctor').first()
+        doctor_user = User(
+            username='doctor',
+            email='doctor@hospital.com',
+            first_name='John',
+            last_name='Smith',
+            role=doctor_role
+        )
+        doctor_user.set_password('doctorpassword')
+        db.session.add(doctor_user)
+        db.session.flush()  # Get user ID before creating staff profile
+        
+        # Create a staff profile for the doctor
+        doctor_staff = Staff(
+            user_id=doctor_user.id,
+            specialization='Cardiology',
+            position='Senior Physician',
+            department='Cardiology',
+            phone='555-123-4567',
+            medical_license='MED-12345',
+            years_experience='15',
+            board_certified=True,
+            availability='Full-time'
+        )
+        db.session.add(doctor_staff)
     
     db.session.commit()
 

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TimeField, TextAreaField, EmailField, BooleanField, HiddenField, FloatField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TimeField, TextAreaField, EmailField, BooleanField, HiddenField, FloatField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from models import User, Patient
 from datetime import date
@@ -222,3 +222,19 @@ class TriageReviewForm(FlaskForm):
     recommendation = TextAreaField('Medical Recommendation', validators=[DataRequired()])
     is_reviewed = BooleanField('Mark as Reviewed')
     submit = SubmitField('Save Review')
+
+class DepartmentForm(FlaskForm):
+    name = StringField('Department Name', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description')
+    head_doctor_id = SelectField('Head Doctor', coerce=int, validators=[Optional()])
+    location = StringField('Location', validators=[Length(max=100)])
+    phone = StringField('Phone Number', validators=[Length(max=20)])
+    email = EmailField('Email', validators=[Optional(), Email()])
+    budget = FloatField('Annual Budget', validators=[Optional()])
+    capacity = IntegerField('Capacity (Beds)', validators=[Optional()])
+    is_active = BooleanField('Active Department', default=True)
+    submit = SubmitField('Save Department')
+
+class DepartmentSearchForm(FlaskForm):
+    search_term = StringField('Search Departments', validators=[Optional()])
+    submit = SubmitField('Search')

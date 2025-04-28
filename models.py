@@ -2,6 +2,7 @@ from datetime import datetime
 from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import func
 
 # Role-based access control
 class Role(db.Model):
@@ -136,3 +137,29 @@ class TriageAssessment(db.Model):
     
     def __repr__(self):
         return f'<TriageAssessment {self.id} for Patient {self.patient_id}>'
+
+# Department model
+class Department(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    head_doctor_id = db.Column(db.Integer, db.ForeignKey('staff.id'))
+    location = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    budget = db.Column(db.Float)
+    capacity = db.Column(db.Integer)  # Number of beds/capacity
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship with the head doctor
+    head_doctor = db.relationship('Staff', foreign_keys=[head_doctor_id], backref='headed_department')
+    
+    def __repr__(self):
+        return f'<Department {self.name}>'
+        
+    def staff_count(self):
+        """Return count of staff members in this department"""
+        from sqlalchemy import func
+        return Staff.query.filter(Staff.department == self.name).count()

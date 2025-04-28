@@ -1,7 +1,7 @@
 import calendar
 from datetime import datetime, timedelta
 from collections import defaultdict
-from models import Patient, Appointment, MedicalRecord, Staff, TriageAssessment
+from models import Patient, Appointment, MedicalRecord, Staff, TriageAssessment, Department
 
 def get_patient_stats():
     """Get statistics about patients"""
@@ -211,6 +211,39 @@ def generate_search_query(model, search_term, filters=None):
     
     return query
 
-# Import for get_staff_by_department function
+# Add function to get department statistics
+def get_department_stats():
+    """Get statistics about departments"""
+    total_departments = Department.query.count()
+    active_departments = Department.query.filter_by(is_active=True).count()
+    
+    # Get total bed capacity
+    total_capacity = 0
+    departments = Department.query.all()
+    for dept in departments:
+        if dept.capacity:
+            total_capacity += dept.capacity
+            
+    # Get departments by staff count
+    departments_staff = []
+    for dept in departments:
+        staff_count = dept.staff_count()
+        departments_staff.append({
+            'name': dept.name,
+            'staff_count': staff_count,
+            'capacity': dept.capacity or 0
+        })
+        
+    # Sort by staff count (descending)
+    departments_staff.sort(key=lambda x: x['staff_count'], reverse=True)
+    
+    return {
+        'total': total_departments,
+        'active': active_departments,
+        'total_capacity': total_capacity,
+        'departments_by_staff': departments_staff[:5]  # Top 5 departments by staff count
+    }
+
+# Import for database functions
 from app import db
 from models import User

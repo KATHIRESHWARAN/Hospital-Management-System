@@ -82,6 +82,12 @@
                                 <i class="fas fa-user-md"></i> Staff
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/departments' in request.path %}active{% endif %}" 
+                               href="{{ url_for('departments') }}">
+                                <i class="fas fa-building"></i> Departments
+                            </a>
+                        </li>
                         {% if current_user.role.name in ['Doctor', 'Nurse', 'Admin'] %}
                         <li class="nav-item">
                             <a class="nav-link {% if '/triage' in request.path %}active{% endif %}" 

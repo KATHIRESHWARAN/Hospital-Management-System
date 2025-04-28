@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Review Triage Assessment - Hospital Management System{% endblock %}
+
+{% block header %}Review Triage Assessment{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('triage') }}" class="btn btn-outline-info">
+    <i class="fas fa-arrow-left me-2"></i> Back to Triage
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot me-2 text-info"></i> AI Triage Assessment
+                    <span class="badge float-end rounded-pill 
+                        {% if assessment.severity == 'Low' %}bg-success
+                        {% elif assessment.severity == 'Medium' %}bg-warning text-dark
+                        {% elif assessment.severity == 'High' %}bg-danger
+                        {% elif assessment.severity == 'Critical' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ assessment.severity }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Patient Information</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ assessment.patient.first_name }} {{ assessment.patient.last_name }}</p>
+                            <p class="mb-1"><strong>Age:</strong> {{ assessment.patient.age() }} years</p>
+                            <p class="mb-1"><strong>Gender:</strong> {{ assessment.patient.gender }}</p>
+                            <p class="mb-1"><strong>Blood Type:</strong> {{ assessment.patient.blood_type or 'Not recorded' }}</p>
+                            <p class="mb-1">
+                                <a href="{{ url_for('view_patient', id=assessment.patient.id) }}" class="btn btn-sm btn-outline-info mt-2">
+                                    <i class="fas fa-external-link-alt me-1"></i> View Patient Profile
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Assessment Details</h6>
+                            <p class="mb-1"><strong>Created:</strong> {{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p class="mb-1"><strong>Status:</strong> 
+                                {% if assessment.is_reviewed %}
+                                <span class="badge bg-success">Reviewed</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending Review</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>AI Confidence:</strong> 
+                                <span class="{{ 'ai-confidence-high' if assessment.ai_confidence >= 0.8 else 'ai-confidence-medium' if assessment.ai_confidence >= 0.6 else 'ai-confidence-low' }}">
+                                    {{ (assessment.ai_confidence * 100)|int }}%
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6>Reported Symptoms</h6>
+                    <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                        {{ assessment.symptoms|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6>AI Assessment</h6>
+                    <div class="ai-assessment p-3">
+                        <p><strong>Severity:</strong> 
+                            <span class="{{ getSeverityClass(assessment.severity) }}">{{ assessment.severity }}</span>
+                        </p>
+                        <p><strong>Recommendation:</strong> {{ assessment.recommendation|replace('\n', '<br>')|safe }}</p>
+                    </div>
+                </div>
+
+                {% if assessment.is_reviewed and assessment.reviewed_by_staff %}
+                <div class="alert alert-success">
+                    <h6 class="mb-2"><i class="fas fa-check-circle me-2"></i> Assessment Reviewed</h6>
+                    <p class="mb-1"><strong>Reviewed By:</strong> {{ assessment.reviewed_by_staff.user.first_name }} {{ assessment.reviewed_by_staff.user.last_name }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2 text-info"></i> Medical Staff Review</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('review_triage', id=assessment.id) }}">
+                    {{ form.hidden_tag() }}
+                    {{ form.triage_id }}
+
+                    <div class="mb-4">
+                        <label for="severity" class="form-label">{{ form.severity.label }}</label>
+                        <div class="d-flex align-items-center">
+                            {{ form.severity(class="form-select" + (" is-invalid" if form.severity.errors else ""), id="severity") }}
+                            <div class="ms-2" id="severityIndicator">
+                                <i class="fas fa-circle fa-lg severity-low" id="lowIndicator"></i>
+                                <i class="fas fa-circle fa-lg severity-medium" id="mediumIndicator" style="display: none;"></i>
+                                <i class="fas fa-circle fa-lg severity-high" id="highIndicator" style="display: none;"></i>
+                                <i class="fas fa-circle fa-lg severity-critical" id="criticalIndicator" style="display: none;"></i>
+                            </div>
+                        </div>
+                        {% if form.severity.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.severity.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="recommendation" class="form-label">{{ form.recommendation.label }}</label>
+                        {{ form.recommendation(class="form-control" + (" is-invalid" if form.recommendation.errors else ""), id="recommendation", rows="5") }}
+                        {% if form.recommendation.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.recommendation.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_reviewed(class="form-check-input", id="is_reviewed") }}
+                            <label class="form-check-label" for="is_reviewed">{{ form.is_reviewed.label }}</label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('triage') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-info") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update severity indicator when severity changes
+        const severitySelect = document.getElementById('severity');
+        const lowIndicator = document.getElementById('lowIndicator');
+        const mediumIndicator = document.getElementById('mediumIndicator');
+        const highIndicator = document.getElementById('highIndicator');
+        const criticalIndicator = document.getElementById('criticalIndicator');
+        
+        function updateSeverityIndicator() {
+            // Hide all indicators
+            lowIndicator.style.display = 'none';
+            mediumIndicator.style.display = 'none';
+            highIndicator.style.display = 'none';
+            criticalIndicator.style.display = 'none';
+            
+            // Show the appropriate indicator
+            switch(severitySelect.value) {
+                case 'Low':
+                    lowIndicator.style.display = 'inline';
+                    break;
+                case 'Medium':
+                    mediumIndicator.style.display = 'inline';
+                    break;
+                case 'High':
+                    highIndicator.style.display = 'inline';
+                    break;
+                case 'Critical':
+                    criticalIndicator.style.display = 'inline';
+                    break;
+            }
+        }
+        
+        // Initial update
+        updateSeverityIndicator();
+        
+        // Update when changed
+        severitySelect.addEventListener('change', updateSeverityIndicator);
+    });
+</script>
+{% endblock %}

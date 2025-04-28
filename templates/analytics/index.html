@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Hospital Management System{% endblock %}
+
+{% block header %}Analytics Dashboard{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group">
+    <button class="btn btn-outline-info" onclick="window.print()">
+        <i class="fas fa-print me-2"></i> Print Report
+    </button>
+    <button class="btn btn-outline-info" id="refreshChartsBtn">
+        <i class="fas fa-sync me-2"></i> Refresh Data
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Patient Stats -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-primary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-info">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ patient_stats.total }}</div>
+                        <div>Total Patients</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-user-plus me-1"></i> {{ patient_stats.new_last_month }} new in last 30 days
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointment Stats - Today -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-secondary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-primary">
+                        <i class="fas fa-calendar-day fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ appointment_stats.today }}</div>
+                        <div>Today's Appointments</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-calendar-check me-1"></i> {{ appointment_stats.tomorrow }} scheduled for tomorrow
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointment Stats - This Week -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-success h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-success">
+                        <i class="fas fa-calendar-week fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ appointment_stats.next_week }}</div>
+                        <div>Next 7 Days</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i> Upcoming appointments
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Triage Stats -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-warning h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-warning">
+                        <i class="fas fa-robot fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ triage_stats.total }}</div>
+                        <div>AI Assessments</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-clock me-1"></i> {{ triage_stats.pending }} pending review
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Monthly Appointments Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-info"></i> Monthly Appointments</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="appointmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Staff by Department Chart -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-info"></i> Staff by Department</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="staffDepartmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Record Types Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-info"></i> Medical Record Types</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="recordTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Triage Severity Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-info"></i> Triage Assessment Severity</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="triageSeverityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Data Summary -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2 text-info"></i> Data Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Patient Demographics</h6>
+                        <p><strong>Total Patients:</strong> {{ patient_stats.total }}</p>
+                        <p><strong>New Patients (Last 30 Days):</strong> {{ patient_stats.new_last_month }}</p>
+                        <p><strong>Growth Rate:</strong> 
+                            {% if patient_stats.total > 0 %}
+                                {{ ((patient_stats.new_last_month / patient_stats.total) * 100)|round(1) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            (last 30 days)
+                        </p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Appointment Summary</h6>
+                        <p><strong>Today's Appointments:</strong> {{ appointment_stats.today }}</p>
+                        <p><strong>Tomorrow's Appointments:</strong> {{ appointment_stats.tomorrow }}</p>
+                        <p><strong>7-Day Forecast:</strong> {{ appointment_stats.next_week }} appointments</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Triage Assessment Summary</h6>
+                        <p><strong>Total Assessments:</strong> {{ triage_stats.total }}</p>
+                        <p><strong>Reviewed:</strong> {{ triage_stats.reviewed }} ({{ (triage_stats.reviewed / triage_stats.total * 100)|round(1) if triage_stats.total > 0 else 0 }}%)</p>
+                        <p><strong>Pending Review:</strong> {{ triage_stats.pending }} ({{ (triage_stats.pending / triage_stats.total * 100)|round(1) if triage_stats.total > 0 else 0 }}%)</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Staff Distribution</h6>
+                        {% for i in range(staff_by_dept.labels|length) %}
+                            <p><strong>{{ staff_by_dept.labels[i] }}:</strong> {{ staff_by_dept.data[i] }} staff members</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all charts
+        initializeCharts();
+        
+        // Refresh charts when button is clicked
+        document.getElementById('refreshChartsBtn').addEventListener('click', function() {
+            initializeCharts();
+            // Show a toast or notification
+            alert('Charts refreshed with latest data!');
+        });
+    });
+</script>
+{% endblock %}

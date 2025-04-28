@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}AI Triage Tool - Hospital Management System{% endblock %}
+
+{% block header %}AI Triage Tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Triage Assessment Form -->
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-robot me-2 text-info"></i> Patient Symptom Assessment</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Enter the patient's symptoms for an AI-powered assessment. This tool helps prioritize 
+                    patients based on symptom severity, but all assessments should be reviewed by medical staff.
+                </p>
+                
+                <form method="post" action="{{ url_for('assess_triage') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="patient_id" class="form-label">{{ form.patient_id.label }}</label>
+                        {{ form.patient_id(class="form-select" + (" is-invalid" if form.patient_id.errors else ""), id="patient_id") }}
+                        {% if form.patient_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.patient_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="symptoms" class="form-label">{{ form.symptoms.label }}</label>
+                        {{ form.symptoms(class="form-control" + (" is-invalid" if form.symptoms.errors else ""), id="symptoms", rows="6", placeholder="Describe the patient's symptoms in detail...") }}
+                        {% if form.symptoms.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.symptoms.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i> Include relevant information like duration, severity, and related symptoms
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-info btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-info"></i> About AI Triage</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>How It Works</h6>
+                    <p>
+                        Our AI-powered triage system uses natural language processing and machine learning to analyze 
+                        patient-reported symptoms and provide an initial assessment of severity and recommended action.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Severity Levels</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <span class="badge rounded-pill bg-success me-3">Low</span>
+                            <span>Minor conditions that typically require routine care</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <span class="badge rounded-pill bg-warning text-dark me-3">Medium</span>
+                            <span>Conditions requiring prompt attention but not emergent</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <span class="badge rounded-pill bg-danger me-3">High</span>
+                            <span>Serious conditions requiring urgent medical attention</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex align-items-center">
+                            <span class="badge rounded-pill bg-danger me-3">Critical</span>
+                            <span>Life-threatening conditions requiring immediate emergency care</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Important:</strong> This tool is meant to assist healthcare providers and should not replace 
+                    professional medical judgment. All AI assessments must be reviewed by qualified medical staff.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Reviews -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2 text-info"></i> Pending Reviews</h5>
+                <span class="badge bg-warning text-dark">{{ unreviewed|length }} Awaiting Review</span>
+            </div>
+            <div class="card-body">
+                {% if unreviewed %}
+                <div class="list-group">
+                    {% for assessment in unreviewed %}
+                    <div class="list-group-item bg-transparent border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">
+                                <a href="{{ url_for('view_patient', id=assessment.patient.id) }}" class="text-decoration-none">
+                                    {{ assessment.patient.first_name }} {{ assessment.patient.last_name }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">{{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p class="mb-2">
+                            <span class="badge rounded-pill 
+                                {% if assessment.severity == 'Low' %}bg-success
+                                {% elif assessment.severity == 'Medium' %}bg-warning text-dark
+                                {% elif assessment.severity == 'High' %}bg-danger
+                                {% elif assessment.severity == 'Critical' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ assessment.severity }}
+                            </span>
+                            <span class="ms-2 {{ 'ai-confidence-high' if assessment.ai_confidence >= 0.8 else 'ai-confidence-medium' if assessment.ai_confidence >= 0.6 else 'ai-confidence-low' }}">
+                                {{ (assessment.ai_confidence * 100)|int }}% confidence
+                            </span>
+                        </p>
+                        <p class="mb-2 small text-muted">{{ assessment.symptoms|truncate(120) }}</p>
+                        <div class="text-end">
+                            <a href="{{ url_for('review_triage', id=assessment.id) }}" class="btn btn-sm btn-info">
+                                Review Assessment
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                    <p>No pending assessments to review.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recently Reviewed -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2 text-info"></i> Recently Reviewed</h5>
+            </div>
+            <div class="card-body">
+                {% if reviewed %}
+                <div class="list-group">
+                    {% for assessment in reviewed %}
+                    <div class="list-group-item bg-transparent border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">
+                                <a href="{{ url_for('view_patient', id=assessment.patient.id) }}" class="text-decoration-none">
+                                    {{ assessment.patient.first_name }} {{ assessment.patient.last_name }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">{{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <span class="badge rounded-pill 
+                                {% if assessment.severity == 'Low' %}bg-success
+                                {% elif assessment.severity == 'Medium' %}bg-warning text-dark
+                                {% elif assessment.severity == 'High' %}bg-danger
+                                {% elif assessment.severity == 'Critical' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ assessment.severity }}
+                            </span>
+                            <small class="ms-2 text-muted">
+                                Reviewed by: {{ assessment.reviewed_by_staff.user.first_name }} {{ assessment.reviewed_by_staff.user.last_name }}
+                            </small>
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <p>No recently reviewed assessments.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

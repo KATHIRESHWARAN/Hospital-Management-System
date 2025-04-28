@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Details - Hospital Management System{% endblock %}
+
+{% block header %}Appointment Details{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group" role="group">
+    <a href="{{ url_for('appointments') }}" class="btn btn-outline-info">
+        <i class="fas fa-arrow-left me-2"></i> Back to Appointments
+    </a>
+    <a href="{{ url_for('edit_appointment', id=appointment.id) }}" class="btn btn-info">
+        <i class="fas fa-edit me-2"></i> Edit Appointment
+    </a>
+    {% if appointment.status == 'Scheduled' %}
+    <a href="{{ url_for('add_record') }}?patient_id={{ appointment.patient.id }}" class="btn btn-outline-info">
+        <i class="fas fa-notes-medical me-2"></i> Add Medical Record
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check me-2 text-info"></i> Appointment Information
+                    <span class="badge float-end rounded-pill 
+                        {% if appointment.status == 'Scheduled' %}bg-info
+                        {% elif appointment.status == 'Completed' %}bg-success
+                        {% else %}bg-danger{% endif %}">
+                        {{ appointment.status }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Date & Time</h6>
+                        <p><strong>Date:</strong> {{ appointment.date.strftime('%A, %B %d, %Y') }}</p>
+                        <p><strong>Time:</strong> {{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</p>
+                        <p><strong>Duration:</strong> 
+                            {% set duration = ((appointment.end_time.hour * 60 + appointment.end_time.minute) - 
+                                              (appointment.start_time.hour * 60 + appointment.start_time.minute)) %}
+                            {{ duration }} minutes
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Appointment Details</h6>
+                        <p><strong>Reason for Visit:</strong> {{ appointment.reason }}</p>
+                        {% if appointment.notes %}
+                        <p><strong>Notes:</strong> {{ appointment.notes }}</p>
+                        {% endif %}
+                        <p><strong>Created:</strong> {{ appointment.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        {% if appointment.created_at != appointment.updated_at %}
+                        <p><strong>Last Updated:</strong> {{ appointment.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user me-2 text-info"></i> Patient</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-circle fa-3x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1">
+                            <a href="{{ url_for('view_patient', id=appointment.patient.id) }}" class="text-decoration-none">
+                                {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-0">{{ appointment.patient.age() }} years old</p>
+                    </div>
+                </div>
+                <p><strong>Phone:</strong> {{ appointment.patient.phone }}</p>
+                {% if appointment.patient.email %}
+                <p><strong>Email:</strong> {{ appointment.patient.email }}</p>
+                {% endif %}
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('view_patient', id=appointment.patient.id) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-external-link-alt me-2"></i> View Patient Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2 text-info"></i> Doctor/Staff</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-md fa-3x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1">
+                            <a href="{{ url_for('view_staff', id=appointment.staff.id) }}" class="text-decoration-none">
+                                {{ appointment.staff.user.first_name }} {{ appointment.staff.user.last_name }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-0">{{ appointment.staff.position }}, {{ appointment.staff.department }}</p>
+                    </div>
+                </div>
+                <p><strong>Phone:</strong> {{ appointment.staff.phone }}</p>
+                <p><strong>Email:</strong> {{ appointment.staff.user.email }}</p>
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('view_staff', id=appointment.staff.id) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-external-link-alt me-2"></i> View Staff Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

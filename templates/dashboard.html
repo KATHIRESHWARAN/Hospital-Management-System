@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Hospital Management System{% endblock %}
+
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Patient Stats -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-primary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-info">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ patient_stats.total }}</div>
+                        <div>Total Patients</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-user-plus me-1"></i> {{ patient_stats.new_last_month }} new in last 30 days
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('patients') }}" class="text-info text-decoration-none">
+                    View Patients <i class="fas fa-chevron-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Today's Appointments -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-secondary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-primary">
+                        <i class="fas fa-calendar-day fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ appointment_stats.today }}</div>
+                        <div>Today's Appointments</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-calendar-check me-1"></i> {{ appointment_stats.tomorrow }} scheduled for tomorrow
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('appointments') }}" class="text-info text-decoration-none">
+                    View Appointments <i class="fas fa-chevron-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Staff Role Info -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-success h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-success">
+                        <i class="fas fa-user-md fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div>Your Role</div>
+                        <div class="h4">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-check-circle me-1"></i> Logged in as {{ current_user.first_name }} {{ current_user.last_name }}
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('staff') }}" class="text-info text-decoration-none">
+                    View Staff Directory <i class="fas fa-chevron-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Next Week Appointments -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card dashboard-card-warning h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-3 text-warning">
+                        <i class="fas fa-calendar-week fa-3x"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="stat-counter">{{ appointment_stats.next_week }}</div>
+                        <div>Next 7 Days</div>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i> Upcoming appointments
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('book_appointment') }}" class="text-info text-decoration-none">
+                    Book Appointment <i class="fas fa-chevron-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Today's Appointments Table -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-day me-2 text-info"></i> Today's Appointments</h5>
+                <a href="{{ url_for('appointments') }}" class="btn btn-sm btn-outline-info">View All</a>
+            </div>
+            <div class="card-body">
+                {% if todays_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Doctor/Staff</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in todays_appointments %}
+                            <tr>
+                                <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_patient', id=appointment.patient.id) }}">
+                                        {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_staff', id=appointment.staff.id) }}">
+                                        {{ appointment.staff.user.first_name }} {{ appointment.staff.user.last_name }}
+                                    </a>
+                                </td>
+                                <td>{{ appointment.reason }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {% if appointment.status == 'Scheduled' %}bg-info{% elif appointment.status == 'Completed' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ appointment.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_appointment', id=appointment.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                    <p class="lead">No appointments scheduled for today.</p>
+                    <a href="{{ url_for('book_appointment') }}" class="btn btn-outline-info">Book an Appointment</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Patients -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-info"></i> Recent Patients</h5>
+                <a href="{{ url_for('patients') }}" class="btn btn-sm btn-outline-info">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_patients %}
+                <ul class="list-group list-group-flush">
+                    {% for patient in recent_patients %}
+                    <li class="list-group-item bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{{ url_for('view_patient', id=patient.id) }}" class="text-decoration-none">
+                                    <h6 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h6>
+                                </a>
+                                <small class="text-muted">Added: {{ patient.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <a href="{{ url_for('view_patient', id=patient.id) }}" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                    <p class="lead">No patients added recently.</p>
+                    <a href="{{ url_for('add_patient') }}" class="btn btn-outline-info">Add a Patient</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.role.name in ['Doctor', 'Nurse', 'Admin'] and pending_triage %}
+<div class="row mt-2">
+    <!-- Pending Triage Assessments -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-robot me-2 text-info"></i> Pending AI Triage Assessments</h5>
+                <a href="{{ url_for('triage') }}" class="btn btn-sm btn-outline-info">Go to Triage</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Created</th>
+                                <th>Symptoms</th>
+                                <th>AI Assessment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assessment in pending_triage %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('view_patient', id=assessment.patient.id) }}">
+                                        {{ assessment.patient.first_name }} {{ assessment.patient.last_name }}
+                                    </a>
+                                </td>
+                                <td>{{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ assessment.symptoms|truncate(50) }}</td>
+                                <td>
+                                    <span class="badge rounded-pill 
+                                        {% if assessment.severity == 'Low' %}bg-success
+                                        {% elif assessment.severity == 'Medium' %}bg-warning text-dark
+                                        {% elif assessment.severity == 'High' %}bg-danger
+                                        {% elif assessment.severity == 'Critical' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ assessment.severity }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('review_triage', id=assessment.id) }}" class="btn btn-sm btn-outline-info">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

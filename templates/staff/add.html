@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Add Staff Member - Hospital Management System{% endblock %}
+
+{% block header %}Add New Staff Member{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('staff') }}" class="btn btn-outline-info">
+    <i class="fas fa-arrow-left me-2"></i> Back to Staff Directory
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-info"></i> Staff Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('add_staff') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <h5 class="mb-3 border-bottom pb-2">Personal Information</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">{{ form.first_name.label }}</label>
+                            {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else ""), id="first_name") }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.first_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">{{ form.last_name.label }}</label>
+                            {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else ""), id="last_name") }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.last_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">{{ form.email.label }}</label>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), id="email", type="email") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">{{ form.phone.label }}</label>
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), id="phone", oninput="formatPhoneNumber(this)") }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.phone.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Professional Information</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="position" class="form-label">{{ form.position.label }}</label>
+                            {{ form.position(class="form-control" + (" is-invalid" if form.position.errors else ""), id="position") }}
+                            {% if form.position.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.position.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="department" class="form-label">{{ form.department.label }}</label>
+                            {{ form.department(class="form-control" + (" is-invalid" if form.department.errors else ""), id="department") }}
+                            {% if form.department.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.department.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="specialization" class="form-label">{{ form.specialization.label }}</label>
+                            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else ""), id="specialization") }}
+                            {% if form.specialization.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.specialization.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Account Information</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">{{ form.username.label }}</label>
+                            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), id="username") }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Username must be at least 4 characters long</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">{{ form.role.label }}</label>
+                            {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), id="role") }}
+                            {% if form.role.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">{{ form.password.label }}</label>
+                        <div class="input-group">
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="password") }}
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('password')">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Leave blank to generate a default password (first initial + last name + 123)
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('staff') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-info") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

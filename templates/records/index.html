@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Records - Hospital Management System{% endblock %}
+
+{% block header %}Medical Records{% endblock %}
+
+{% block header_buttons %}
+{% if current_user.role.name in ['Doctor', 'Nurse', 'Admin'] %}
+<a href="{{ url_for('add_record') }}" class="btn btn-info">
+    <i class="fas fa-notes-medical me-2"></i> Add Medical Record
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" action="{{ url_for('records') }}" class="row g-3 mb-4">
+            <div class="col-md-3">
+                {{ search_form.search_term(class="form-control", placeholder="Search patient or diagnosis...", value=search_term) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.record_type(class="form-select", value=record_type) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_from(class="form-control", type="date", placeholder="From date", value=date_from) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_to(class="form-control", type="date", placeholder="To date", value=date_to) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.submit(class="btn btn-info w-100") }}
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-outline-secondary w-100 clear-search">Clear</button>
+            </div>
+        </form>
+
+        <!-- Medical Records list -->
+        {% if records %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Doctor/Staff</th>
+                        <th>Type</th>
+                        <th>Diagnosis</th>
+                        <th>Follow-up</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('view_patient', id=record.patient.id) }}" class="text-decoration-none">
+                                {{ record.patient.first_name }} {{ record.patient.last_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_staff', id=record.staff.id) }}" class="text-decoration-none">
+                                {{ record.staff.user.first_name }} {{ record.staff.user.last_name }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-info">{{ record.record_type }}</span></td>
+                        <td>{{ record.diagnosis|truncate(30) }}</td>
+                        <td>{{ record.follow_up.strftime('%Y-%m-%d') if record.follow_up else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_record', id=record.id) }}" class="btn btn-sm btn-outline-info" 
+                               data-bs-toggle="tooltip" title="View Record">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Medical records navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('records', page=pagination.prev_num, search_term=search_term, record_type=record_type, date_from=date_from, date_to=date_to) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('records', page=page_num, search_term=search_term, record_type=record_type, date_from=date_from, date_to=date_to) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('records', page=pagination.next_num, search_term=search_term, record_type=record_type, date_from=date_from, date_to=date_to) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-file-medical-alt fa-4x text-muted mb-3"></i>
+            {% if search_term or record_type or date_from or date_to %}
+            <p class="lead">No medical records found matching your search criteria</p>
+            <a href="{{ url_for('records') }}" class="btn btn-outline-info">Clear Search</a>
+            {% else %}
+            <p class="lead">No medical records have been added yet</p>
+            {% if current_user.role.name in ['Doctor', 'Nurse', 'Admin'] %}
+            <a href="{{ url_for('add_record') }}" class="btn btn-info">Add Your First Medical Record</a>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

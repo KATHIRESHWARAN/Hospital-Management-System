@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if appointment else 'Book' }} Appointment - Hospital Management System{% endblock %}
+
+{% block header %}{{ 'Edit' if appointment else 'Book New' }} Appointment{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('appointments') }}" class="btn btn-outline-info">
+    <i class="fas fa-arrow-left me-2"></i> Back to Appointments
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-{{ 'edit' if appointment else 'calendar-plus' }} me-2 text-info"></i> 
+                    {{ 'Edit' if appointment else 'Schedule New' }} Appointment
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('edit_appointment', id=appointment.id) if appointment else url_for('book_appointment') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="patient_id" class="form-label">{{ form.patient_id.label }}</label>
+                            {{ form.patient_id(class="form-select" + (" is-invalid" if form.patient_id.errors else ""), id="patient_id") }}
+                            {% if form.patient_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.patient_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="staff_id" class="form-label">{{ form.staff_id.label }}</label>
+                            {{ form.staff_id(class="form-select" + (" is-invalid" if form.staff_id.errors else ""), id="staff_id") }}
+                            {% if form.staff_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.staff_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">{{ form.date.label }}</label>
+                            {{ form.date(class="form-control appointment-date" + (" is-invalid" if form.date.errors else ""), id="date", type="date") }}
+                            {% if form.date.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="start_time" class="form-label">{{ form.start_time.label }}</label>
+                            {{ form.start_time(class="form-control" + (" is-invalid" if form.start_time.errors else ""), id="start_time", type="time") }}
+                            {% if form.start_time.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.start_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_time" class="form-label">{{ form.end_time.label }}</label>
+                            {{ form.end_time(class="form-control" + (" is-invalid" if form.end_time.errors else ""), id="end_time", type="time") }}
+                            {% if form.end_time.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.end_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">{{ form.reason.label }}</label>
+                        {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), id="reason") }}
+                        {% if form.reason.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.reason.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{{ form.notes.label }}</label>
+                        {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else ""), id="notes", rows="3") }}
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if appointment %}
+                    <div class="mb-4">
+                        <label for="status" class="form-label">{{ form.status.label }}</label>
+                        {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else ""), id="status") }}
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.status.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('appointments') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-info", value="Save Appointment") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize appointment time validation
+        initializeAppointmentTimeValidation();
+    });
+</script>
+{% endblock %}

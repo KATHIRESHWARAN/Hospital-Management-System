@@ -1,0 +1,208 @@
+/* Custom styling for Hospital Management System */
+
+/* Use Bootstrap color variables for consistency */
+:root {
+    --hospital-primary: var(--bs-info);
+    --hospital-secondary: var(--bs-primary);
+    --hospital-accent: var(--bs-cyan);
+    --hospital-success: var(--bs-teal);
+    --hospital-warning: var(--bs-orange);
+    --hospital-danger: var(--bs-red);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 4px solid var(--hospital-primary);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card-primary {
+    border-left-color: var(--hospital-primary);
+}
+
+.dashboard-card-secondary {
+    border-left-color: var(--hospital-secondary);
+}
+
+.dashboard-card-success {
+    border-left-color: var(--hospital-success);
+}
+
+.dashboard-card-warning {
+    border-left-color: var(--hospital-warning);
+}
+
+.dashboard-card-danger {
+    border-left-color: var(--hospital-danger);
+}
+
+/* Status badges */
+.status-scheduled {
+    background-color: var(--hospital-primary);
+}
+
+.status-completed {
+    background-color: var(--hospital-success);
+}
+
+.status-cancelled {
+    background-color: var(--hospital-danger);
+}
+
+/* Severity indicators for triage */
+.severity-low {
+    color: var(--hospital-success);
+}
+
+.severity-medium {
+    color: var(--hospital-warning);
+}
+
+.severity-high {
+    color: var(--hospital-danger);
+}
+
+.severity-critical {
+    color: var(--hospital-danger);
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+/* Dashboard stats counters */
+.stat-counter {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--hospital-primary);
+}
+
+/* Patient view section styling */
+.patient-info-section {
+    border-left: 3px solid var(--hospital-primary);
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+/* Medical record styling */
+.record-header {
+    border-bottom: 2px solid var(--hospital-primary);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Login page styling */
+.login-container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.login-logo {
+    font-size: 2.5rem;
+    color: var(--hospital-primary);
+    margin-bottom: 1.5rem;
+}
+
+/* Navbar customization */
+.navbar-hospital {
+    background-color: var(--bs-body-bg);
+    border-bottom: 1px solid rgba(var(--bs-info-rgb), 0.2);
+}
+
+/* Sidebar navigation */
+.sidebar {
+    min-height: calc(100vh - 56px);
+    border-right: 1px solid rgba(var(--bs-info-rgb), 0.1);
+}
+
+.sidebar .nav-link {
+    color: var(--bs-body-color);
+    padding: 0.75rem 1.25rem;
+    border-left: 3px solid transparent;
+    transition: background-color 0.2s ease, border-left-color 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    border-left-color: var(--hospital-primary);
+}
+
+.sidebar .nav-link.active {
+    color: var(--hospital-primary);
+    background-color: rgba(var(--bs-info-rgb), 0.15);
+    border-left-color: var(--hospital-primary);
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(var(--bs-info-rgb), 0.1);
+    }
+    
+    .stat-counter {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* Accessible focus indicators */
+:focus {
+    outline: 2px solid var(--hospital-primary);
+    outline-offset: 2px;
+}
+
+/* Triage assessment styling */
+.ai-assessment {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    border-left: 3px solid var(--hospital-primary);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.ai-confidence-high {
+    color: var(--hospital-success);
+}
+
+.ai-confidence-medium {
+    color: var(--hospital-warning);
+}
+
+.ai-confidence-low {
+    color: var(--hospital-danger);
+}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments - Hospital Management System{% endblock %}
+
+{% block header %}Appointments{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('book_appointment') }}" class="btn btn-info">
+    <i class="fas fa-calendar-plus me-2"></i> Book Appointment
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" action="{{ url_for('appointments') }}" class="row g-3 mb-4">
+            <div class="col-md-3">
+                {{ search_form.search_term(class="form-control", placeholder="Search patient or reason...", value=search_term) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_from(class="form-control", type="date", placeholder="From date", value=date_from) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.date_to(class="form-control", type="date", placeholder="To date", value=date_to) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.status(class="form-select", value=status) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.submit(class="btn btn-info w-100") }}
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-outline-secondary w-100 clear-search">Clear</button>
+            </div>
+        </form>
+
+        <!-- Appointments list -->
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Doctor/Staff</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('view_patient', id=appointment.patient.id) }}" class="text-decoration-none">
+                                {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_staff', id=appointment.staff.id) }}" class="text-decoration-none">
+                                {{ appointment.staff.user.first_name }} {{ appointment.staff.user.last_name }}
+                            </a>
+                        </td>
+                        <td>{{ appointment.reason|truncate(30) }}</td>
+                        <td>
+                            <span class="badge rounded-pill 
+                                {% if appointment.status == 'Scheduled' %}bg-info
+                                {% elif appointment.status == 'Completed' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ appointment.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('view_appointment', id=appointment.id) }}" class="btn btn-sm btn-outline-info" 
+                                   data-bs-toggle="tooltip" title="View Appointment">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_appointment', id=appointment.id) }}" class="btn btn-sm btn-outline-secondary"
+                                   data-bs-toggle="tooltip" title="Edit Appointment">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('add_record') }}?patient_id={{ appointment.patient.id }}" class="btn btn-sm btn-outline-primary"
+                                   data-bs-toggle="tooltip" title="Add Medical Record">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Appointment list navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('appointments', page=pagination.prev_num, search_term=search_term, date_from=date_from, date_to=date_to, status=status) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('appointments', page=page_num, search_term=search_term, date_from=date_from, date_to=date_to, status=status) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('appointments', page=pagination.next_num, search_term=search_term, date_from=date_from, date_to=date_to, status=status) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+            {% if search_term or date_from or date_to or status %}
+            <p class="lead">No appointments found matching your search criteria</p>
+            <a href="{{ url_for('appointments') }}" class="btn btn-outline-info">Clear Search</a>
+            {% else %}
+            <p class="lead">No appointments have been scheduled yet</p>
+            <a href="{{ url_for('book_appointment') }}" class="btn btn-info">Book Your First Appointment</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

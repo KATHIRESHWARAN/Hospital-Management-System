@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Patient: {{ patient.first_name }} {{ patient.last_name }} - Hospital Management System{% endblock %}
+
+{% block header %}Patient: {{ patient.first_name }} {{ patient.last_name }}{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group" role="group">
+    <a href="{{ url_for('edit_patient', id=patient.id) }}" class="btn btn-info">
+        <i class="fas fa-edit me-2"></i> Edit Patient
+    </a>
+    <a href="{{ url_for('book_appointment') }}?patient_id={{ patient.id }}" class="btn btn-outline-info">
+        <i class="fas fa-calendar-plus me-2"></i> Book Appointment
+    </a>
+    <a href="{{ url_for('add_record') }}?patient_id={{ patient.id }}" class="btn btn-outline-info">
+        <i class="fas fa-notes-medical me-2"></i> Add Record
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Patient Information Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-circle me-2 text-info"></i> Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Personal Details</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ patient.first_name }} {{ patient.last_name }}</p>
+                            <p class="mb-1"><strong>Date of Birth:</strong> {{ patient.date_of_birth.strftime('%Y-%m-%d') }}</p>
+                            <p class="mb-1"><strong>Age:</strong> {{ patient.age() }} years</p>
+                            <p class="mb-1"><strong>Gender:</strong> {{ patient.gender }}</p>
+                            <p class="mb-1"><strong>Blood Type:</strong> {{ patient.blood_type or 'Not recorded' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Contact Information</h6>
+                            <p class="mb-1"><strong>Phone:</strong> {{ format_phone(patient.phone) }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ patient.email or 'Not provided' }}</p>
+                            <p class="mb-1"><strong>Address:</strong> {{ patient.address }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Emergency Contact</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ patient.emergency_contact or 'Not provided' }}</p>
+                            <p class="mb-1"><strong>Phone:</strong> {{ format_phone(patient.emergency_phone) if patient.emergency_phone else 'Not provided' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="patient-info-section">
+                            <h6>Insurance Information</h6>
+                            <p class="mb-1"><strong>Provider:</strong> {{ patient.insurance_provider or 'Not provided' }}</p>
+                            <p class="mb-1"><strong>ID:</strong> {{ patient.insurance_id or 'Not provided' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-muted bg-transparent">
+                <small>Patient since: {{ patient.created_at.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointments Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-info"></i> Appointments</h5>
+                <a href="{{ url_for('book_appointment') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-plus"></i> Book New
+                </a>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Doctor/Staff</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                <td>{{ appointment.staff.user.first_name }} {{ appointment.staff.user.last_name }}</td>
+                                <td>
+                                    <span class="badge rounded-pill 
+                                        {% if appointment.status == 'Scheduled' %}bg-info
+                                        {% elif appointment.status == 'Completed' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ appointment.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_appointment', id=appointment.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <p>No appointments scheduled for this patient.</p>
+                    <a href="{{ url_for('book_appointment') }}?patient_id={{ patient.id }}" class="btn btn-outline-info">
+                        Book First Appointment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Medical Records -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-notes-medical me-2 text-info"></i> Medical Records</h5>
+                <a href="{{ url_for('add_record') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-plus"></i> Add Record
+                </a>
+            </div>
+            <div class="card-body">
+                {% if records %}
+                <div class="accordion" id="medicalRecordsAccordion">
+                    {% for record in records %}
+                    <div class="accordion-item bg-transparent">
+                        <h2 class="accordion-header" id="record-heading-{{ record.id }}">
+                            <button class="accordion-button collapsed bg-transparent" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#record-collapse-{{ record.id }}" 
+                                    aria-expanded="false" aria-controls="record-collapse-{{ record.id }}">
+                                <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                    <div>
+                                        <span class="badge rounded-pill bg-info me-2">{{ record.record_type }}</span>
+                                        {{ record.date.strftime('%Y-%m-%d') }}
+                                    </div>
+                                    <div class="text-muted small">
+                                        Dr. {{ record.staff.user.first_name }} {{ record.staff.user.last_name }}
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="record-collapse-{{ record.id }}" class="accordion-collapse collapse" 
+                             aria-labelledby="record-heading-{{ record.id }}" data-bs-parent="#medicalRecordsAccordion">
+                            <div class="accordion-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6>Diagnosis</h6>
+                                        <p>{{ record.diagnosis }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Treatment</h6>
+                                        <p>{{ record.treatment }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if record.prescriptions %}
+                                <div class="mb-3">
+                                    <h6>Prescriptions</h6>
+                                    <p>{{ record.prescriptions }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if record.notes %}
+                                <div class="mb-3">
+                                    <h6>Notes</h6>
+                                    <p>{{ record.notes }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if record.follow_up %}
+                                <div>
+                                    <h6>Follow-up Date</h6>
+                                    <p>{{ record.follow_up.strftime('%Y-%m-%d') }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="mt-3 text-end">
+                                    <a href="{{ url_for('view_record', id=record.id) }}" class="btn btn-sm btn-outline-info">
+                                        View Full Record
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-file-medical-alt fa-3x text-muted mb-3"></i>
+                    <p>No medical records for this patient.</p>
+                    <a href="{{ url_for('add_record') }}?patient_id={{ patient.id }}" class="btn btn-outline-info">
+                        Add First Medical Record
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Triage Assessments -->
+{% if triage_assessments %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-robot me-2 text-info"></i> AI Triage Assessments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Symptoms</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assessment in triage_assessments %}
+                            <tr>
+                                <td>{{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ assessment.symptoms|truncate(100) }}</td>
+                                <td>
+                                    <span class="badge rounded-pill 
+                                        {% if assessment.severity == 'Low' %}bg-success
+                                        {% elif assessment.severity == 'Medium' %}bg-warning text-dark
+                                        {% elif assessment.severity == 'High' %}bg-danger
+                                        {% elif assessment.severity == 'Critical' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ assessment.severity }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if assessment.is_reviewed %}
+                                    <span class="badge bg-success">Reviewed</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Pending Review</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="{{ 'ai-confidence-high' if assessment.ai_confidence >= 0.8 else 'ai-confidence-medium' if assessment.ai_confidence >= 0.6 else 'ai-confidence-low' }}">
+                                        {{ (assessment.ai_confidence * 100)|int }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if not assessment.is_reviewed and current_user.role.name in ['Doctor', 'Nurse', 'Admin'] %}
+                                    <a href="{{ url_for('review_triage', id=assessment.id) }}" class="btn btn-sm btn-outline-info">
+                                        Review
+                                    </a>
+                                    {% elif assessment.is_reviewed %}
+                                    <span class="text-muted small">
+                                        Reviewed by: {{ assessment.reviewed_by_staff.user.first_name }} {{ assessment.reviewed_by_staff.user.last_name }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

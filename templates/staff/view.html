@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Staff: {{ staff.user.first_name }} {{ staff.user.last_name }} - Hospital Management System{% endblock %}
+
+{% block header %}Staff: {{ staff.user.first_name }} {{ staff.user.last_name }}{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('staff') }}" class="btn btn-outline-info">
+    <i class="fas fa-arrow-left me-2"></i> Back to Staff Directory
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Staff Information Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2 text-info"></i> Staff Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-md fa-5x text-info mb-3"></i>
+                    <h4>{{ staff.user.first_name }} {{ staff.user.last_name }}</h4>
+                    <p class="badge bg-info">{{ staff.user.role.name }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Professional Details</h6>
+                    <p class="mb-1"><strong>Position:</strong> {{ staff.position }}</p>
+                    <p class="mb-1"><strong>Department:</strong> {{ staff.department }}</p>
+                    {% if staff.specialization %}
+                    <p class="mb-1"><strong>Specialization:</strong> {{ staff.specialization }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Contact Information</h6>
+                    <p class="mb-1"><strong>Email:</strong> {{ staff.user.email }}</p>
+                    <p class="mb-1"><strong>Phone:</strong> {{ format_phone(staff.phone) }}</p>
+                </div>
+                
+                <div>
+                    <h6 class="border-bottom pb-2">Account Information</h6>
+                    <p class="mb-1"><strong>Username:</strong> {{ staff.user.username }}</p>
+                    <p class="mb-1"><strong>Status:</strong> 
+                        {% if staff.user.is_active %}
+                        <span class="text-success">Active</span>
+                        {% else %}
+                        <span class="text-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointments Card -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-info"></i> Upcoming Appointments</h5>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_patient', id=appointment.patient.id) }}" class="text-decoration-none">
+                                        {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                                    </a>
+                                </td>
+                                <td>{{ appointment.reason|truncate(30) }}</td>
+                                <td>
+                                    <span class="badge rounded-pill 
+                                        {% if appointment.status == 'Scheduled' %}bg-info
+                                        {% elif appointment.status == 'Completed' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ appointment.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_appointment', id=appointment.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <p>No appointments scheduled for this staff member.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medical Records -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-notes-medical me-2 text-info"></i> Recent Medical Records</h5>
+            </div>
+            <div class="card-body">
+                {% if records %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient</th>
+                                <th>Type</th>
+                                <th>Diagnosis</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_patient', id=record.patient.id) }}" class="text-decoration-none">
+                                        {{ record.patient.first_name }} {{ record.patient.last_name }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-info">{{ record.record_type }}</span></td>
+                                <td>{{ record.diagnosis|truncate(50) }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_record', id=record.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-file-medical-alt fa-3x text-muted mb-3"></i>
+                    <p>No medical records created by this staff member.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

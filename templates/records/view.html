@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Record: {{ record.patient.first_name }} {{ record.patient.last_name }} - Hospital Management System{% endblock %}
+
+{% block header %}Medical Record{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group" role="group">
+    <a href="{{ url_for('records') }}" class="btn btn-outline-info">
+        <i class="fas fa-arrow-left me-2"></i> Back to Records
+    </a>
+    <a href="{{ url_for('view_patient', id=record.patient.id) }}" class="btn btn-outline-info">
+        <i class="fas fa-user me-2"></i> View Patient
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-medical me-2 text-info"></i> 
+                    Medical Record Details
+                    <span class="badge bg-info float-end">{{ record.record_type }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="record-header d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5>{{ record.patient.first_name }} {{ record.patient.last_name }}</h5>
+                        <p class="text-muted mb-0">
+                            <strong>Date:</strong> {{ record.date.strftime('%A, %B %d, %Y') }}
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <p class="mb-0"><strong>Doctor/Staff:</strong> {{ record.staff.user.first_name }} {{ record.staff.user.last_name }}</p>
+                        <p class="text-muted mb-0">{{ record.staff.position }}, {{ record.staff.department }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Diagnosis</h6>
+                        <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3">
+                            {{ record.diagnosis|replace('\n', '<br>')|safe }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Treatment</h6>
+                        <div class="p-3 bg-secondary bg-opacity-10 rounded mb-3">
+                            {{ record.treatment|replace('\n', '<br>')|safe }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if record.prescriptions %}
+                <div class="mb-4">
+                    <h6>Prescriptions</h6>
+                    <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                        {{ record.prescriptions|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if record.notes %}
+                <div class="mb-4">
+                    <h6>Notes</h6>
+                    <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                        {{ record.notes|replace('\n', '<br>')|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if record.follow_up %}
+                <div class="alert alert-info">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    <strong>Follow-up Appointment:</strong> {{ record.follow_up.strftime('%A, %B %d, %Y') }}
+                    <a href="{{ url_for('book_appointment') }}?patient_id={{ record.patient.id }}" class="btn btn-sm btn-outline-info float-end">
+                        Book Follow-up
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user me-2 text-info"></i> Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-circle fa-3x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1">
+                            <a href="{{ url_for('view_patient', id=record.patient.id) }}" class="text-decoration-none">
+                                {{ record.patient.first_name }} {{ record.patient.last_name }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-0">{{ record.patient.age() }} years old</p>
+                    </div>
+                </div>
+                
+                <p><strong>Date of Birth:</strong> {{ record.patient.date_of_birth.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Gender:</strong> {{ record.patient.gender }}</p>
+                {% if record.patient.blood_type %}
+                <p><strong>Blood Type:</strong> {{ record.patient.blood_type }}</p>
+                {% endif %}
+                <p><strong>Phone:</strong> {{ record.patient.phone }}</p>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('view_patient', id=record.patient.id) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-external-link-alt me-2"></i> View Full Patient Profile
+                    </a>
+                    <a href="{{ url_for('book_appointment') }}?patient_id={{ record.patient.id }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-calendar-plus me-2"></i> Book New Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2 text-info"></i> Attending Doctor/Staff</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-md fa-3x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1">
+                            <a href="{{ url_for('view_staff', id=record.staff.id) }}" class="text-decoration-none">
+                                {{ record.staff.user.first_name }} {{ record.staff.user.last_name }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-0">{{ record.staff.position }}, {{ record.staff.department }}</p>
+                    </div>
+                </div>
+                
+                {% if record.staff.specialization %}
+                <p><strong>Specialization:</strong> {{ record.staff.specialization }}</p>
+                {% endif %}
+                <p><strong>Phone:</strong> {{ record.staff.phone }}</p>
+                <p><strong>Email:</strong> {{ record.staff.user.email }}</p>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('view_staff', id=record.staff.id) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-external-link-alt me-2"></i> View Staff Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Directory - Hospital Management System{% endblock %}
+
+{% block header %}Staff Directory{% endblock %}
+
+{% block header_buttons %}
+{% if current_user.role.name == 'Admin' %}
+<a href="{{ url_for('add_staff') }}" class="btn btn-info">
+    <i class="fas fa-user-plus me-2"></i> Add Staff Member
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" action="{{ url_for('staff') }}" class="row g-3 align-items-end mb-4">
+            <div class="col-md-8">
+                {{ search_form.search_term(class="form-control", placeholder="Search by name, email, position or department...", value=search_term) }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.submit(class="btn btn-info w-100") }}
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-secondary w-100 clear-search">Clear</button>
+            </div>
+        </form>
+
+        <!-- Staff list -->
+        {% if staff %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Specialization</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff_member in staff %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('view_staff', id=staff_member.id) }}" class="text-decoration-none">
+                                {{ staff_member.user.first_name }} {{ staff_member.user.last_name }}
+                            </a>
+                        </td>
+                        <td>{{ staff_member.position }}</td>
+                        <td>{{ staff_member.department }}</td>
+                        <td>{{ staff_member.specialization or '-' }}</td>
+                        <td>{{ staff_member.phone }}</td>
+                        <td>
+                            <a href="{{ url_for('view_staff', id=staff_member.id) }}" class="btn btn-sm btn-outline-info" 
+                               data-bs-toggle="tooltip" title="View Staff Profile">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Staff list navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('staff', page=pagination.prev_num, search_term=search_term) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('staff', page=page_num, search_term=search_term) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('staff', page=pagination.next_num, search_term=search_term) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
+            {% if search_term %}
+            <p class="lead">No staff members found matching "{{ search_term }}"</p>
+            <a href="{{ url_for('staff') }}" class="btn btn-outline-info">Clear Search</a>
+            {% else %}
+            <p class="lead">No staff members have been added yet</p>
+            {% if current_user.role.name == 'Admin' %}
+            <a href="{{ url_for('add_staff') }}" class="btn btn-info">Add Your First Staff Member</a>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

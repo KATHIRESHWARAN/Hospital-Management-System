@@ -21,6 +21,10 @@ function initializeCharts() {
     if (document.getElementById('triageSeverityChart')) {
         initializeTriageSeverityChart();
     }
+    
+    if (document.getElementById('departmentStatsChart')) {
+        initializeDepartmentStatsChart();
+    }
 }
 
 // Monthly Appointments Chart
@@ -233,5 +237,55 @@ function initializeTriageSeverityChart() {
         .catch(error => {
             console.error('Error fetching triage severity chart data:', error);
             document.getElementById('triageSeverityChart').innerHTML = '<div class="alert alert-danger">Error loading chart data</div>';
+        });
+}
+
+// Department Statistics Chart
+function initializeDepartmentStatsChart() {
+    fetch('/api/chart/departments-stats')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('departmentStatsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Department Staff Count & Capacity',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching department stats chart data:', error);
+            document.getElementById('departmentStatsChart').innerHTML = '<div class="alert alert-danger">Error loading chart data</div>';
         });
 }

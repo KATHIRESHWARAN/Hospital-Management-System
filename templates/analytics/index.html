@@ -158,6 +158,22 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    <!-- Department Stats Chart -->
+    <div class="col-lg-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-building me-2 text-info"></i> Department Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="departmentStatsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Data Summary -->
     <div class="col-12">
@@ -167,7 +183,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <h6 class="border-bottom pb-2 mb-3">Patient Demographics</h6>
                         <p><strong>Total Patients:</strong> {{ patient_stats.total }}</p>
                         <p><strong>New Patients (Last 30 Days):</strong> {{ patient_stats.new_last_month }}</p>
@@ -181,26 +197,40 @@
                         </p>
                     </div>
                     
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <h6 class="border-bottom pb-2 mb-3">Appointment Summary</h6>
                         <p><strong>Today's Appointments:</strong> {{ appointment_stats.today }}</p>
                         <p><strong>Tomorrow's Appointments:</strong> {{ appointment_stats.tomorrow }}</p>
                         <p><strong>7-Day Forecast:</strong> {{ appointment_stats.next_week }} appointments</p>
                     </div>
+                    
+                    <div class="col-md-4">
+                        <h6 class="border-bottom pb-2 mb-3">Department Summary</h6>
+                        <p><strong>Total Departments:</strong> {{ department_stats.total }}</p>
+                        <p><strong>Active Departments:</strong> {{ department_stats.active }}</p>
+                        <p><strong>Total Bed Capacity:</strong> {{ department_stats.total_capacity }}</p>
+                    </div>
                 </div>
                 
                 <div class="row mt-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <h6 class="border-bottom pb-2 mb-3">Triage Assessment Summary</h6>
                         <p><strong>Total Assessments:</strong> {{ triage_stats.total }}</p>
                         <p><strong>Reviewed:</strong> {{ triage_stats.reviewed }} ({{ (triage_stats.reviewed / triage_stats.total * 100)|round(1) if triage_stats.total > 0 else 0 }}%)</p>
                         <p><strong>Pending Review:</strong> {{ triage_stats.pending }} ({{ (triage_stats.pending / triage_stats.total * 100)|round(1) if triage_stats.total > 0 else 0 }}%)</p>
                     </div>
                     
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <h6 class="border-bottom pb-2 mb-3">Staff Distribution</h6>
                         {% for i in range(staff_by_dept.labels|length) %}
                             <p><strong>{{ staff_by_dept.labels[i] }}:</strong> {{ staff_by_dept.data[i] }} staff members</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6 class="border-bottom pb-2 mb-3">Top Departments by Staff</h6>
+                        {% for dept in department_stats.departments_by_staff %}
+                            <p><strong>{{ dept.name }}:</strong> {{ dept.staff_count }} staff, {{ dept.capacity }} beds</p>
                         {% endfor %}
                     </div>
                 </div>

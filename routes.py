@@ -12,7 +12,8 @@ from forms import (LoginForm, RegistrationForm, PatientForm, PatientSearchForm,
                   MedicalRecordForm, MedicalRecordSearchForm, TriageForm, TriageReviewForm,
                   DepartmentForm, DepartmentSearchForm)
 from utils import (get_patient_stats, get_appointment_stats, get_monthly_appointment_data,
-                  get_record_type_distribution, get_staff_by_department, get_triage_stats,
+                  get_record_type_distribution, get_staff_by_department, get_triage_stats, 
+                  get_department_stats,
                   format_phone_number, generate_search_query)
 from ai_services import assess_patient_symptoms
 
@@ -789,6 +790,7 @@ def analytics():
     record_types = get_record_type_distribution()
     staff_by_dept = get_staff_by_department()
     triage_stats = get_triage_stats()
+    department_stats = get_department_stats()
     
     return render_template(
         'analytics/index.html',
@@ -798,7 +800,8 @@ def analytics():
         monthly_appointments=monthly_appointments,
         record_types=record_types,
         staff_by_dept=staff_by_dept,
-        triage_stats=triage_stats
+        triage_stats=triage_stats,
+        department_stats=department_stats
     )
 
 # API routes for charts

@@ -10,7 +10,7 @@ from models import User, Role, Patient, Staff, MedicalRecord, Appointment, Triag
 from forms import (LoginForm, RegistrationForm, PatientForm, PatientSearchForm, 
                   StaffForm, StaffSearchForm, AppointmentForm, AppointmentSearchForm,
                   MedicalRecordForm, MedicalRecordSearchForm, TriageForm, TriageReviewForm,
-                  DepartmentForm, DepartmentSearchForm)
+                  DepartmentForm, DepartmentSearchForm, PasswordChangeForm, ProfileUpdateForm)
 from utils import (get_patient_stats, get_appointment_stats, get_monthly_appointment_data,
                   get_record_type_distribution, get_staff_by_department, get_triage_stats, 
                   get_department_stats,
@@ -1012,3 +1012,63 @@ def api_department_stats():
             }
         ]
     })
+
+# User Profile and Settings Routes
+@app.route('/profile')
+@login_required
+def profile():
+    # Import the Appointment model here to avoid circular imports
+    from models import Appointment
+    
+    return render_template(
+        'profile.html', 
+        title='User Profile',
+        Appointment=Appointment
+    )
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    profile_form = ProfileUpdateForm(obj=current_user)
+    password_form = PasswordChangeForm()
+    
+    return render_template(
+        'settings.html', 
+        title='User Settings',
+        profile_form=profile_form,
+        password_form=password_form
+    )
+
+@app.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    form = PasswordChangeForm()
+    
+    if form.validate_on_submit():
+        if current_user.check_password(form.current_password.data):
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash('Your password has been updated successfully!', 'success')
+        else:
+            flash('Current password is incorrect', 'danger')
+    
+    return redirect(url_for('settings'))
+
+@app.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    form = ProfileUpdateForm()
+    
+    if form.validate_on_submit():
+        current_user.first_name = form.first_name.data
+        current_user.last_name = form.last_name.data
+        current_user.email = form.email.data
+        
+        # Update staff profile if exists
+        if current_user.staff_profile and form.phone.data:
+            current_user.staff_profile.phone = form.phone.data
+            
+        db.session.commit()
+        flash('Your profile has been updated successfully!', 'success')
+    
+    return redirect(url_for('profile'))

@@ -64,11 +64,50 @@ class StaffForm(FlaskForm):
     email = EmailField('Email', validators=[DataRequired(), Email()])
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=64)])
     password = PasswordField('Password', validators=[Optional(), Length(min=8)])
-    specialization = StringField('Specialization', validators=[Length(max=100)])
-    position = StringField('Position', validators=[DataRequired(), Length(max=100)])
-    department = StringField('Department', validators=[DataRequired(), Length(max=100)])
+    
+    # Enhanced fields for specialization and medical credentials
+    specialization = StringField('Medical Specialization', validators=[Length(max=100)])
+    position = StringField('Position/Title', validators=[DataRequired(), Length(max=100)])
+    department = SelectField('Department', 
+                           choices=[
+                               ('', 'Select Department'),
+                               ('Cardiology', 'Cardiology'),
+                               ('Dermatology', 'Dermatology'),
+                               ('Emergency Medicine', 'Emergency Medicine'),
+                               ('Family Medicine', 'Family Medicine'),
+                               ('Gastroenterology', 'Gastroenterology'),
+                               ('General Surgery', 'General Surgery'),
+                               ('Gynecology', 'Gynecology'),
+                               ('Internal Medicine', 'Internal Medicine'),
+                               ('Neurology', 'Neurology'),
+                               ('Obstetrics', 'Obstetrics'),
+                               ('Oncology', 'Oncology'),
+                               ('Ophthalmology', 'Ophthalmology'),
+                               ('Orthopedics', 'Orthopedics'),
+                               ('Pediatrics', 'Pediatrics'),
+                               ('Psychiatry', 'Psychiatry'),
+                               ('Radiology', 'Radiology'),
+                               ('Urology', 'Urology'),
+                               ('Administration', 'Administration'),
+                               ('Nursing', 'Nursing'),
+                               ('Pharmacy', 'Pharmacy'),
+                               ('Laboratory', 'Laboratory'),
+                               ('Other', 'Other')
+                           ], 
+                           validators=[DataRequired()])
+    medical_license = StringField('Medical License/ID', validators=[Optional(), Length(max=50)])
+    years_experience = StringField('Years of Experience', validators=[Optional(), Length(max=3)])
+    board_certified = BooleanField('Board Certified', default=False)
+    availability = SelectField('Availability', 
+                             choices=[
+                                 ('Full-time', 'Full-time'),
+                                 ('Part-time', 'Part-time'),
+                                 ('On-call', 'On-call'),
+                                 ('Visiting', 'Visiting')
+                             ],
+                             default='Full-time')
     phone = StringField('Phone', validators=[DataRequired(), Length(max=20)])
-    role = SelectField('Role', choices=[], coerce=int, validators=[DataRequired()])
+    role = SelectField('System Role', choices=[], coerce=int, validators=[DataRequired()])
     submit = SubmitField('Save Staff')
     
     def validate_username(self, username):

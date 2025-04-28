@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Add Staff Member - Hospital Management System{% endblock %}
+{% block title %}Add Medical Staff - Hospital Management System{% endblock %}
 
-{% block header %}Add New Staff Member{% endblock %}
+{% block header %}Add New Medical Staff Member{% endblock %}
 
 {% block header_buttons %}
 <a href="{{ url_for('staff') }}" class="btn btn-outline-info">
@@ -13,9 +13,9 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-info"></i> Staff Information</h5>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info bg-opacity-10">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2 text-info"></i> Medical Staff Information</h5>
             </div>
             <div class="card-body">
                 <form method="post" action="{{ url_for('add_staff') }}">
@@ -73,12 +73,12 @@
                         </div>
                     </div>
                     
-                    <h5 class="mt-4 mb-3 border-bottom pb-2">Professional Information</h5>
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Medical Credentials</h5>
                     
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="position" class="form-label">{{ form.position.label }}</label>
-                            {{ form.position(class="form-control" + (" is-invalid" if form.position.errors else ""), id="position") }}
+                            {{ form.position(class="form-control" + (" is-invalid" if form.position.errors else ""), id="position", placeholder="e.g., Physician, Surgeon, Nurse Practitioner") }}
                             {% if form.position.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.position.errors %}
@@ -87,9 +87,9 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="department" class="form-label">{{ form.department.label }}</label>
-                            {{ form.department(class="form-control" + (" is-invalid" if form.department.errors else ""), id="department") }}
+                            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else ""), id="department") }}
                             {% if form.department.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.department.errors %}
@@ -98,9 +98,12 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
                             <label for="specialization" class="form-label">{{ form.specialization.label }}</label>
-                            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else ""), id="specialization") }}
+                            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else ""), id="specialization", placeholder="e.g., Cardiology, Pediatrics, General Medicine") }}
                             {% if form.specialization.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.specialization.errors %}
@@ -109,9 +112,51 @@
                                 </div>
                             {% endif %}
                         </div>
+                        <div class="col-md-4">
+                            <label for="availability" class="form-label">{{ form.availability.label }}</label>
+                            {{ form.availability(class="form-select" + (" is-invalid" if form.availability.errors else ""), id="availability") }}
+                            {% if form.availability.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.availability.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                     
-                    <h5 class="mt-4 mb-3 border-bottom pb-2">Account Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="medical_license" class="form-label">{{ form.medical_license.label }}</label>
+                            {{ form.medical_license(class="form-control" + (" is-invalid" if form.medical_license.errors else ""), id="medical_license", placeholder="License/ID Number") }}
+                            {% if form.medical_license.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.medical_license.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="years_experience" class="form-label">{{ form.years_experience.label }}</label>
+                            {{ form.years_experience(class="form-control" + (" is-invalid" if form.years_experience.errors else ""), id="years_experience", type="number", min="0", max="99") }}
+                            {% if form.years_experience.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.years_experience.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 align-self-center pt-4">
+                            <div class="form-check form-switch">
+                                {{ form.board_certified(class="form-check-input", id="board_certified") }}
+                                <label class="form-check-label" for="board_certified">{{ form.board_certified.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">System Account Information</h5>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -136,6 +181,7 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                            <div class="form-text">System role determines access permissions</div>
                         </div>
                     </div>
                     
@@ -159,7 +205,13 @@
                         </div>
                     </div>
                     
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Adding a staff member will create both a user account and a staff profile in the system.
+                        The staff member will be able to log in using the provided username and password.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                         <a href="{{ url_for('staff') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
                         {{ form.submit(class="btn btn-info") }}
                     </div>

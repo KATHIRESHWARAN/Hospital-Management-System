@@ -42,6 +42,13 @@ class Staff(db.Model):
     position = db.Column(db.String(100), nullable=False)
     department = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
+    
+    # Additional medical credential fields
+    medical_license = db.Column(db.String(50))
+    years_experience = db.Column(db.String(3))
+    board_certified = db.Column(db.Boolean, default=False)
+    availability = db.Column(db.String(20), default='Full-time')
+    
     user = db.relationship('User', backref=db.backref('staff_profile', uselist=False))
     appointments = db.relationship('Appointment', backref='staff', lazy='dynamic')
     

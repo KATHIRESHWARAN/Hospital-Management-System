@@ -278,22 +278,26 @@ def add_staff():
         db.session.add(user)
         db.session.flush()  # Get user ID before committing
         
-        # Create staff profile
+        # Create staff profile with enhanced medical credentials
         staff = Staff(
             user_id=user.id,
             specialization=form.specialization.data,
             position=form.position.data,
             department=form.department.data,
-            phone=form.phone.data
+            phone=form.phone.data,
+            medical_license=form.medical_license.data,
+            years_experience=form.years_experience.data,
+            board_certified=form.board_certified.data,
+            availability=form.availability.data
         )
         
         db.session.add(staff)
         db.session.commit()
         
-        flash('Staff member added successfully!', 'success')
+        flash('Medical staff member added successfully!', 'success')
         return redirect(url_for('staff'))
     
-    return render_template('staff/add.html', title='Add Staff Member', form=form)
+    return render_template('staff/add.html', title='Add Medical Staff', form=form)
 
 @app.route('/staff/<int:id>')
 @login_required

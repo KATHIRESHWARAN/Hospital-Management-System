@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Hospital Management System{% endblock %}
+
+{% block header %}User Profile{% endblock %}
+
+{% block header_buttons %}
+<a href="{{ url_for('settings') }}" class="btn btn-outline-info">
+    <i class="fas fa-cog me-2"></i> Settings
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i> Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mb-3">
+                        <span class="initials">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</span>
+                    </div>
+                    <h4>{{ current_user.first_name }} {{ current_user.last_name }}</h4>
+                    <p class="badge rounded-pill bg-info">{{ current_user.role.name }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent">
+                        <strong><i class="fas fa-user me-2"></i> Username:</strong>
+                        <span class="float-end">{{ current_user.username }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent">
+                        <strong><i class="fas fa-envelope me-2"></i> Email:</strong>
+                        <span class="float-end">{{ current_user.email }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent">
+                        <strong><i class="fas fa-calendar-alt me-2"></i> Account Created:</strong>
+                        <span class="float-end">{{ current_user.created_at.strftime('%Y-%m-%d') }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent">
+                        <strong><i class="fas fa-id-badge me-2"></i> User ID:</strong>
+                        <span class="float-end">{{ current_user.id }}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('settings') }}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-edit me-2"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% if current_user.staff_profile %}
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-user-md me-2"></i> Staff Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Position & Department</h6>
+                        <p><strong>Position:</strong> {{ current_user.staff_profile.position }}</p>
+                        <p><strong>Department:</strong> {{ current_user.staff_profile.department }}</p>
+                        <p><strong>Specialization:</strong> {{ current_user.staff_profile.specialization or 'N/A' }}</p>
+                        <p><strong>Availability:</strong> {{ current_user.staff_profile.availability }}</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2 mb-3">Credentials</h6>
+                        <p><strong>Medical License:</strong> {{ current_user.staff_profile.medical_license or 'N/A' }}</p>
+                        <p><strong>Experience:</strong> {{ current_user.staff_profile.years_experience or 'N/A' }} years</p>
+                        <p><strong>Board Certified:</strong> {{ 'Yes' if current_user.staff_profile.board_certified else 'No' }}</p>
+                        <p><strong>Contact:</strong> {{ current_user.staff_profile.phone }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="border-bottom pb-2 mb-3">Recent Activity</h6>
+                    
+                    {% if current_user.staff_profile.appointments.count() > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appt in current_user.staff_profile.appointments.order_by(Appointment.date.desc()).limit(5).all() %}
+                                <tr>
+                                    <td>{{ appt.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('view_patient', id=appt.patient.id) }}">
+                                            {{ appt.patient.first_name }} {{ appt.patient.last_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ appt.reason }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill {% if appt.status == 'Scheduled' %}bg-info{% elif appt.status == 'Completed' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ appt.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No recent appointments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: var(--bs-primary);
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .initials {
+        position: relative;
+        font-size: 40px;
+        line-height: 40px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

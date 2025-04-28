@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField, DateFi
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from models import User, Patient
 from datetime import date
+from flask_login import current_user
 
 # Authentication forms
 class LoginForm(FlaskForm):
@@ -238,3 +239,28 @@ class DepartmentForm(FlaskForm):
 class DepartmentSearchForm(FlaskForm):
     search_term = StringField('Search Departments', validators=[Optional()])
     submit = SubmitField('Search')
+
+# User Profile and Settings Forms
+class PasswordChangeForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password', message='Passwords must match')])
+    submit = SubmitField('Change Password')
+    
+    def validate_current_password(self, field):
+        # Password verification will be done in the route
+
+        pass  # Validation is handled in the route function
+
+class ProfileUpdateForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired(), Length(max=100)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(max=100)])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    submit = SubmitField('Save Changes')
+    
+    def validate_email(self, email):
+        if email.data != current_user.email:
+            user = User.query.filter_by(email=email.data).first()
+            if user is not None:
+                raise ValidationError('Please use a different email address.')

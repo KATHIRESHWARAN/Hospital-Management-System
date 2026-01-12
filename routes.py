@@ -15,7 +15,6 @@ from utils import (get_patient_stats, get_appointment_stats, get_monthly_appoint
                   get_record_type_distribution, get_staff_by_department, get_triage_stats, 
                   get_department_stats,
                   format_phone_number, generate_search_query)
-from ai_services import assess_patient_symptoms
 
 # Initialize roles and default users
 def initialize_roles():
@@ -706,6 +705,9 @@ def assess_triage():
     if form.validate_on_submit():
         patient_id = form.patient_id.data
         symptoms = form.symptoms.data
+        
+        # Lazy import AI services (only when needed)
+        from ai_services import assess_patient_symptoms
         
         # Assess symptoms with AI
         assessment = assess_patient_symptoms(symptoms)

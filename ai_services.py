@@ -1,13 +1,20 @@
 import logging
 import re
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
 
 # Initialize logging
 logger = logging.getLogger(__name__)
+
+# Lazy load ML dependencies
+try:
+    import numpy as np
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.pipeline import Pipeline
+    from sklearn.model_selection import train_test_split
+    ML_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"ML dependencies not available: {e}. AI services will be limited.")
+    ML_AVAILABLE = False
 
 # Global spaCy model - loaded lazily on first use (not at import time)
 # This prevents serverless function crashes on Vercel startup
@@ -127,10 +134,18 @@ class TriageAI:
     def __init__(self):
         self.model = None
         self.confidence_threshold = 0.6
-        self.initialize_model()
+        if ML_AVAILABLE:
+            self.initialize_model()
+        else:
+            logger.warning("ML dependencies not available. Triage AI will use fallback mode.")
     
     def initialize_model(self):
         """Initialize and train the triage model"""
+        if not ML_AVAILABLE:
+            logger.warning("Cannot initialize model: ML dependencies not available")
+            self.model = None
+            return
+            
         try:
             # Extract symptoms and severities
             symptoms = [data[0] for data in ALL_TRAINING_DATA]
@@ -179,7 +194,11 @@ class TriageAI:
             
             # Get prediction probabilities
             probabilities = self.model.predict_proba([preprocessed_symptoms])[0]
-            confidence = np.max(probabilities)
+            
+            if ML_AVAILABLE:
+                confidence = float(np.max(probabilities))
+            else:
+                confidence = float(probabilities[0]) if probabilities.size > 0 else 0.0
             
             # Generate recommendation based on severity
             recommendation = self.generate_recommendation(severity, confidence, symptoms_text)
@@ -187,7 +206,7 @@ class TriageAI:
             return {
                 'severity': severity,
                 'recommendation': recommendation,
-                'confidence': float(confidence)
+                'confidence': confidence
             }
         except Exception as e:
             logger.error(f"Error in symptom assessment: {str(e)}")

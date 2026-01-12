@@ -137,7 +137,7 @@ class TriageAI:
         if ML_AVAILABLE:
             self.initialize_model()
         else:
-            logger.warning("ML dependencies not available. Triage AI will use fallback mode.")
+            logger.warning("ML dependencies not available. Triage AI will use keyword-based fallback on Vercel.")
     
     def initialize_model(self):
         """Initialize and train the triage model"""
@@ -168,6 +168,56 @@ class TriageAI:
             logger.error(f"Error initializing triage model: {str(e)}")
             self.model = None
     
+    def assess_symptoms_fallback(self, symptoms_text):
+        """
+        Simple keyword-based assessment when ML is not available (for Vercel).
+        This is used as a fallback when scikit-learn/spacy are not installed.
+        """
+        symptoms_lower = symptoms_text.lower()
+        
+        # Critical severity keywords
+        critical_keywords = [
+            'unconscious', 'unresponsive', 'can\'t breathe', 'unable to breathe', 'severe chest pain',
+            'arm pain', 'jaw pain', 'severe bleeding', 'poisoning', 'overdose', 'seizure',
+            'severe burn', 'facial drooping', 'slurred speech', 'unable to move', 'paralyzed'
+        ]
+        
+        # High severity keywords
+        high_keywords = [
+            'severe abdominal pain', 'difficulty breathing', 'high fever', 'chest pain',
+            'headache with stiff neck', 'vision changes', 'deep cut', 'broken bone', 'fracture',
+            'severe pain', 'acute pain', 'difficulty swallowing', 'severe vomiting', 'abdominal bleeding'
+        ]
+        
+        # Medium severity keywords
+        medium_keywords = [
+            'persistent headache', 'fever', 'cough with phlegm', 'dehydration', 'vomiting',
+            'ear pain', 'urinary', 'infection', 'flu', 'nausea', 'diarrhea', 'rash spreading',
+            'swollen', 'joint pain', 'body aches', 'persistent cough'
+        ]
+        
+        # Check severity level
+        if any(keyword in symptoms_lower for keyword in critical_keywords):
+            severity = 'Critical'
+            confidence = 0.85
+        elif any(keyword in symptoms_lower for keyword in high_keywords):
+            severity = 'High'
+            confidence = 0.80
+        elif any(keyword in symptoms_lower for keyword in medium_keywords):
+            severity = 'Medium'
+            confidence = 0.70
+        else:
+            severity = 'Low'
+            confidence = 0.65
+        
+        recommendation = self.generate_recommendation(severity, confidence, symptoms_text)
+        
+        return {
+            'severity': severity,
+            'recommendation': recommendation,
+            'confidence': confidence
+        }
+    
     def assess_symptoms(self, symptoms_text):
         """
         Assess the severity of symptoms and provide recommendations
@@ -178,12 +228,9 @@ class TriageAI:
         Returns:
             dict: Assessment results including severity, recommendation, and confidence
         """
+        # Use fallback if ML model is not available (for Vercel)
         if not self.model:
-            return {
-                'severity': 'Unknown',
-                'recommendation': 'Error in AI model. Please consult with a healthcare professional directly.',
-                'confidence': 0.0
-            }
+            return self.assess_symptoms_fallback(symptoms_text)
         
         try:
             # Preprocess the symptoms
@@ -209,12 +256,8 @@ class TriageAI:
                 'confidence': confidence
             }
         except Exception as e:
-            logger.error(f"Error in symptom assessment: {str(e)}")
-            return {
-                'severity': 'Unknown',
-                'recommendation': 'An error occurred during assessment. Please consult with a healthcare professional.',
-                'confidence': 0.0
-            }
+            logger.error(f"Error in symptom assessment: {str(e)}. Using fallback...")
+            return self.assess_symptoms_fallback(symptoms_text)
     
     def generate_recommendation(self, severity, confidence, symptoms):
         """Generate a recommendation based on the assessed severity and confidence"""

@@ -14,13 +14,17 @@ dependencies = [
     "wtforms>=3.2.1",
     "flask-wtf>=1.2.2",
     "sqlalchemy>=2.0.40",
+]
+
+[project.optional-dependencies]
+# ML dependencies for local development (too large for Vercel)
+# Install locally with: pip install -e ".[ml]"
+ml = [
     "numpy>=2.2.5",
     "scikit-learn>=1.6.1",
     "spacy>=3.7,<3.9",
 ]
 
-[project.optional-dependencies]
-# Development dependencies
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",

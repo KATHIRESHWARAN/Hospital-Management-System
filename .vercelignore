@@ -32,3 +32,9 @@ htmlcov
 .ruff_cache
 attached_assets
 instance
+.replit
+scripts
+static/js
+static/css
+templates
+uv.lock

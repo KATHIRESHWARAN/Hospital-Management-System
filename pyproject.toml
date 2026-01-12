@@ -21,5 +21,5 @@ dependencies = [
 ml = [
     "numpy>=2.2.5",
     "scikit-learn>=1.6.1",
-    "spacy>=3.8.5",
+    "spacy>=3.7,<3.9",
 ]

@@ -49,5 +49,5 @@ with app.app_context():
     
     # During development, we'll drop all tables and recreate them
     # This should be removed in production
-    db.drop_all()
-    db.create_all()
+    # db.drop_all()
+    # db.create_all()

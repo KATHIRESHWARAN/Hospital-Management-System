@@ -1,0 +1,38 @@
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+
+# ===== Compiled files =====
+*.class
+
+# ===== Java / Maven / Gradle =====
+target/
+build/
+out/
+
+# ===== IDE - IntelliJ IDEA =====
+.idea/
+*.iml
+
+# ===== IDE - Eclipse =====
+.project
+.classpath
+.settings/
+
+# ===== IDE - VS Code =====
+.vscode/
+
+# ===== Environment files =====
+.env
+venv
+
+# ===== Node modules (if used) =====
+node_modules/
+
+# ===== Temporary files =====
+*.tmp
+*.temp
+*.swp

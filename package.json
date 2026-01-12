@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check-size": "python scripts/check_function_size.py -p . -t 250",
+    "predeploy": "npm run check-size"
   },
   "keywords": [],
   "author": "",

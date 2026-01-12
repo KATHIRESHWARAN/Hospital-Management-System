@@ -5,17 +5,32 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
-import spacy
 
 # Initialize logging
 logger = logging.getLogger(__name__)
 
-# Try to load spaCy model, use a simpler approach if not available
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    logger.warning("SpaCy model not found. Using simple tokenization instead.")
-    nlp = None
+# Global spaCy model - loaded lazily on first use (not at import time)
+# This prevents serverless function crashes on Vercel startup
+_nlp = None
+
+def get_nlp_model():
+    """Lazy-load spaCy model on first use."""
+    global _nlp
+    if _nlp is None:
+        try:
+            import spacy
+            _nlp = spacy.load("en_core_web_sm")
+            logger.info("spaCy model loaded successfully")
+        except OSError:
+            logger.warning("spaCy model not found. Using simple tokenization instead.")
+            _nlp = None
+        except Exception as e:
+            logger.warning(f"Failed to load spaCy model: {e}. Using simple tokenization instead.")
+            _nlp = None
+    return _nlp
+
+# For backward compatibility, expose nlp as a callable
+nlp = None
 
 # Training data for the triage model
 # Format: (symptoms, severity)
@@ -93,6 +108,7 @@ ALL_TRAINING_DATA = TRIAGE_TRAINING_DATA + MEDICAL_TRAINING_DATA
 
 # Function to preprocess text
 def preprocess_text(text):
+    nlp = get_nlp_model()  # Get lazily-loaded model
     if nlp:
         # Use spaCy for preprocessing if available
         doc = nlp(text.lower())
